@@ -1,0 +1,70 @@
+/* Fondo del Loader */
+.loader-container {
+  height: 100vh;
+  background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+/* Animación de letras */
+.text-wrapper {
+  text-align: center;
+  animation: fadeOut 3.5s forwards;
+}
+
+.fade-text {
+  letter-spacing: 8px;
+  font-weight: 900 !important;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+}
+
+.sub-text {
+  opacity: 0.8;
+  font-style: italic;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 0; transform: scale(0.9); }
+  30% { opacity: 1; transform: scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* Estilo del Login */
+.login-bg {
+  height: 100vh;
+  background: #f4f6f9;
+  display: flex;
+  align-items: center;
+}
+
+.login-card {
+  padding: 40px;
+  border-radius: 20px !important;
+  text-align: center;
+}
+
+.animated-bg {
+  background: linear-gradient(-45deg, #1a237e, #254f63, #0d47a1, #001970);
+  background-size: 400% 400%;
+  animation: gradient 10s ease infinite;
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.fade-text {
+  animation: fade 3s ease-in-out forwards;
+}
+
+@keyframes fade {
+  0% { opacity: 0; transform: scale(0.8); filter: blur(10px); }
+  50% { opacity: 1; filter: blur(0px); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
