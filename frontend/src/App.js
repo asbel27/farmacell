@@ -22,6 +22,39 @@ import Reparaciones from './components/Reparaciones';
 
 const drawerWidth = 260;
 
+const styles = {
+  cardHeader: (color1, color2, shadow) => ({
+    background: `linear-gradient(60deg, ${color1}, ${color2})`,
+    boxShadow: `0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px ${shadow}`,
+    borderRadius: '3px',
+    padding: '15px',
+    marginTop: '-30px',
+    marginLeft: '15px',
+    marginRight: '15px',
+    color: 'white',
+    position: 'relative'
+  }),
+  sidebar: {
+    width: drawerWidth,
+    [`& .MuiDrawer-paper`]: { 
+      width: drawerWidth, 
+      boxSizing: 'border-box', 
+      borderRight: 'none', 
+      bgcolor: '#1f1f1f',
+      color: 'white',
+      backgroundImage: 'url(https://demos.creative-tim.com/vue-material-dashboard/img/sidebar-2.32103624.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    }
+  },
+  mainPanel: {
+    flexGrow: 1, 
+    p: 4, 
+    bgcolor: '#eeeeee', 
+    minHeight: '100vh'
+  }
+};
+
 function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -29,14 +62,12 @@ function App() {
   const [error, setError] = useState('');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
 
-  // --- ESTADOS DE DATOS ---
   const [usuarios, setUsuarios] = useState([]);
   const [productos, setProductos] = useState([]);
   const [bigData, setBigData] = useState([]);
   const [alertas, setAlertas] = useState([]);
   const [resumenFinanciero, setResumenFinanciero] = useState(0);
 
-  // --- ESTADOS DE UI Y MODALES (CORREGIDO) ---
   const [anchorEl, setAnchorEl] = useState(null); 
   const [openUserModal, setOpenUserModal] = useState(false);
   const [openInvModal, setOpenInvModal] = useState(false);
@@ -107,145 +138,187 @@ function App() {
   };
 
   if (loading) return (
-    <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#0f172a' }}>
-      <Typography variant="h2" sx={{ color: 'white', fontWeight: 900, letterSpacing: '-2px', animation: 'pulse 2s infinite' }}>
+    <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#1f1f1f' }}>
+      <Typography variant="h2" sx={{ color: '#4caf50', fontWeight: 900, letterSpacing: '-2px', animation: 'pulse 2s infinite' }}>
         FARMACELL
       </Typography>
     </Box>
   );
 
   if (!user) return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f1f5f9', p: 3 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#eee', p: 3 }}>
       <Container maxWidth="xs">
-        <Paper elevation={20} sx={{ p: 5, textAlign: 'center', borderRadius: '24px' }}>
-          <Typography variant="h4" sx={{ fontWeight: 900, color: '#1e3a8a', mb: 4 }}>LOGIN</Typography>
-          <TextField fullWidth label="Email" margin="normal" onChange={(e)=>setLoginForm({...loginForm, email:e.target.value})} />
-          <TextField fullWidth label="Password" type="password" margin="normal" onChange={(e)=>setLoginForm({...loginForm, password:e.target.value})} />
-          {error && <Alert severity="error" sx={{ mt: 2, borderRadius: '12px' }}>{error}</Alert>}
-          <Button fullWidth variant="contained" sx={{ mt: 4, py: 2, bgcolor: '#2563eb', borderRadius: '16px', fontWeight: 'bold' }} onClick={manejarLogin}>
-            ENTRAR
-          </Button>
+        <Paper elevation={10} sx={{ p: 0, borderRadius: '6px', overflow: 'visible' }}>
+          <Box sx={styles.cardHeader('#66bb6a', '#43a047', 'rgba(76, 175, 80, 0.4)')}>
+             <Typography variant="h5" align="center" fontWeight="bold">LOGIN</Typography>
+          </Box>
+          <Box sx={{ p: 4, pt: 2 }}>
+            <TextField fullWidth label="Email" variant="standard" margin="normal" onChange={(e)=>setLoginForm({...loginForm, email:e.target.value})} />
+            <TextField fullWidth label="Password" variant="standard" type="password" margin="normal" onChange={(e)=>setLoginForm({...loginForm, password:e.target.value})} />
+            {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+            <Button fullWidth variant="contained" sx={{ mt: 4, py: 1.5, bgcolor: '#4caf50', '&:hover': {bgcolor: '#388e3c'} }} onClick={manejarLogin}>
+              ENTRAR
+            </Button>
+          </Box>
         </Paper>
       </Container>
     </Box>
   );
 
   return (
-    <Box sx={{ display: 'flex', bgcolor: '#f8fafc', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="fixed" sx={{ zIndex: 1201, bgcolor: '#1e3a8a', boxShadow: 'none' }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 900 }}>FARMACELL PRO</Typography>
-          
-          {user.rol === 'admin' && (
-            <>
-              <IconButton color="inherit" onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ mr: 2 }}>
-                <Badge badgeContent={alertas.length} color="error"><NotificationsIcon /></Badge>
-              </IconButton>
-              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)} PaperProps={{ sx: { borderRadius: '16px', width: 320 } }}>
-                <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography sx={{ fontWeight: 'bold' }}>Alertas</Typography>
-                  <Chip label={alertas.length} size="small" sx={{ bgcolor: '#2563eb', color: 'white' }} />
-                </Box>
-                <Divider />
-                {alertas.map((a, i) => (
-                  <MenuItem key={i} sx={{ py: 1.5 }}>
-                    <ListItemIcon>{a.tipo === 'Stock Bajo' ? <ErrorIcon color="error" /> : <CheckIcon color="success" />}</ListItemIcon>
-                    <ListItemText primary={a.item} secondary={a.mensaje} />
-                  </MenuItem>
-                ))}
-              </Menu>
-            </>
-          )}
-          <Avatar sx={{ bgcolor: '#fff', color: '#1e3a8a', fontWeight: 'bold', mr: 2 }}>{user.nombre[0]}</Avatar>
-          <IconButton color="inherit" onClick={() => setUser(null)}><LogoutIcon /></IconButton>
-        </Toolbar>
-      </AppBar>
-
-      <Drawer variant="permanent" sx={{ width: drawerWidth, [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', borderRight: 'none', bgcolor: '#f8fafc' } }}>
-        <Toolbar />
-        <Box sx={{ p: 2 }}>
-          <List>
-            <ListItemButton onClick={() => setVista('usuarios')} selected={vista === 'usuarios'} sx={{ borderRadius: '12px', mb: 1 }}><ListItemIcon><PeopleIcon color="primary"/></ListItemIcon><ListItemText primary="Personal"/></ListItemButton>
-            <ListItemButton onClick={() => setVista('inventario')} selected={vista === 'inventario'} sx={{ borderRadius: '12px', mb: 1 }}><ListItemIcon><InventoryIcon color="primary"/></ListItemIcon><ListItemText primary="Inventario"/></ListItemButton>
-            <ListItemButton onClick={() => setVista('reparaciones')} selected={vista === 'reparaciones'} sx={{ borderRadius: '12px', mb: 1 }}><ListItemIcon><BuildIcon color="primary"/></ListItemIcon><ListItemText primary="Taller"/></ListItemButton>
-            <ListItemButton onClick={() => setVista('bigdata')} selected={vista === 'bigdata'} sx={{ borderRadius: '12px', mb: 1 }}><ListItemIcon><AssessmentIcon color="primary"/></ListItemIcon><ListItemText primary="Demanda"/></ListItemButton>
-            <ListItemButton onClick={() => setVista('tienda')} selected={vista === 'tienda'} sx={{ borderRadius: '12px', mt: 4, border: '1px dashed #cbd5e1' }}><ListItemIcon><SearchIcon color="secondary"/></ListItemIcon><ListItemText primary="Vista Cliente" /></ListItemButton>
+      
+      <Drawer variant="permanent" sx={styles.sidebar}>
+        <Box sx={{ p: 3, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.8)' }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>FARMACELL PRO</Typography>
+        </Box>
+        <Divider sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+        <Box sx={{ bgcolor: 'rgba(0,0,0,0.8)', height: '100%' }}>
+          <List sx={{ px: 2 }}>
+            {[
+              { text: 'Personal', icon: <PeopleIcon />, vista: 'usuarios', color: '#00acc1' },
+              { text: 'Inventario', icon: <InventoryIcon />, vista: 'inventario', color: '#4caf50' },
+              { text: 'Taller', icon: <BuildIcon />, vista: 'reparaciones', color: '#ff9800' },
+              { text: 'Demanda', icon: <AssessmentIcon />, vista: 'bigdata', color: '#f44336' },
+              { text: 'Catalogo', icon: <SearchIcon />, vista: 'tienda', color: '#e91e63' }
+            ].map((item) => (
+              <ListItemButton 
+                key={item.text}
+                onClick={() => setVista(item.vista)} 
+                selected={vista === item.vista}
+                sx={{ 
+                  borderRadius: '3px', mb: 1,
+                  bgcolor: vista === item.vista ? item.color : 'transparent',
+                  boxShadow: vista === item.vista ? `0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px ${item.color}` : 'none',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+                }}
+              >
+                <ListItemIcon sx={{ color: 'white' }}>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} sx={{ color: 'white' }} />
+              </ListItemButton>
+            ))}
           </List>
+          <ListItemButton sx={{ mt: 'auto', px: 2 }} onClick={() => setUser(null)}>
+            <ListItemIcon sx={{ color: 'white' }}><LogoutIcon /></ListItemIcon>
+            <ListItemText primary="Cerrar Sesión" sx={{ color: 'white' }} />
+          </ListItemButton>
         </Box>
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 4 }}>
-        <Toolbar />
+      <Box component="main" sx={styles.mainPanel}>
+        <AppBar position="static" sx={{ bgcolor: 'transparent', boxShadow: 'none', mb: 4 }}>
+          <Toolbar>
+            <Typography variant="h5" sx={{ color: '#3c4858', fontWeight: 300, flexGrow: 1 }}>
+              {vista.toUpperCase()}
+            </Typography>
+            
+            {user.rol === 'admin' && (
+              <IconButton color="default" onClick={(e) => setAnchorEl(e.currentTarget)}>
+                <Badge badgeContent={alertas.length} color="error"><NotificationsIcon /></Badge>
+              </IconButton>
+            )}
+            <Avatar sx={{ bgcolor: '#4caf50', ml: 2, mr: 1 }}>{user.nombre ? user.nombre[0] : 'U'}</Avatar>
+            <Typography sx={{ color: '#3c4858', mr: 2, fontWeight: 'bold' }}>{user.nombre}</Typography>
+          </Toolbar>
+        </AppBar>
+
         {user.rol === 'admin' && (vista === 'usuarios' || vista === 'inventario') && (
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid container spacing={3} sx={{ mb: 6, mt: 1 }}>
             <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 3, bgcolor: '#1e3a8a', color: 'white', borderRadius: '24px', borderBottom: '8px solid #3b82f6' }}>
-                <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 'bold' }}>Capital Inventario</Typography>
-                <Typography variant="h3" sx={{ fontWeight: 900 }}>${resumenFinanciero}</Typography>
+              <Paper sx={{ p: 0, borderRadius: '6px', position: 'relative' }}>
+                <Box sx={styles.cardHeader('#ffa726', '#fb8c00', 'rgba(255, 152, 0, 0.4)')}>
+                   <InventoryIcon fontSize="large" />
+                </Box>
+                <Box sx={{ p: 2, textAlign: 'right' }}>
+                  <Typography variant="body2" color="textSecondary">Capital Inventario</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 300 }}>${resumenFinanciero}</Typography>
+                </Box>
+                <Divider />
+                <Box sx={{ p: 1, pl: 2 }}><Typography variant="caption" color="textSecondary">Actualizado ahora</Typography></Box>
               </Paper>
             </Grid>
             <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 3, bgcolor: '#fff', borderRadius: '24px', borderBottom: '8px solid #10b981' }}>
-                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>Stock Total</Typography>
-                <Typography variant="h3" sx={{ fontWeight: 900, color: '#10b981' }}>{productos.reduce((acc, p) => acc + (parseInt(p.stock) || 0), 0)}</Typography>
+              <Paper sx={{ p: 0, borderRadius: '6px' }}>
+                <Box sx={styles.cardHeader('#66bb6a', '#43a047', 'rgba(76, 175, 80, 0.4)')}>
+                   <SearchIcon fontSize="large" />
+                </Box>
+                <Box sx={{ p: 2, textAlign: 'right' }}>
+                  <Typography variant="body2" color="textSecondary">Stock Total</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                    {productos.reduce((acc, p) => acc + (parseInt(p.stock) || 0), 0)}
+                  </Typography>
+                </Box>
+                <Divider />
+                <Box sx={{ p: 1, pl: 2 }}><Typography variant="caption" color="textSecondary">Equipos en tienda</Typography></Box>
               </Paper>
             </Grid>
           </Grid>
         )}
-        <Container maxWidth="xl">
-          {vista === 'usuarios' && (
-            <GestionUsuarios 
-              usuarios={usuarios} 
-              cargarTodo={cargarTodo} 
-              setModoEdicion={setModoEdicion} 
-              setFormU={setFormU} 
-              setOpenUserModal={setOpenUserModal} 
-            />
-          )}
-          {vista === 'inventario' && (
-            <InventarioReal 
-              productos={productos} 
-              cargarTodo={cargarTodo} 
-              setModoEdicion={setModoEdicion} 
-              setFormI={setFormI} 
-              setOpenInvModal={setOpenInvModal} 
-            />
-          )}
-          {vista === 'reparaciones' && <Reparaciones user={user} cargarTodo={cargarTodo} />}
-          {vista === 'bigdata' && <BigDataView bigData={bigData} />}
-          {vista === 'tienda' && <CatalogoTienda productos={productos} user={user} />}
+
+        <Container maxWidth="xl" sx={{ mt: 2 }}>
+            {vista === 'usuarios' && (
+              <GestionUsuarios 
+                usuarios={usuarios} cargarTodo={cargarTodo} 
+                setModoEdicion={setModoEdicion} setFormU={setFormU} setOpenUserModal={setOpenUserModal} 
+              />
+            )}
+            {vista === 'inventario' && (
+              <InventarioReal 
+                productos={productos} cargarTodo={cargarTodo} 
+                setModoEdicion={setModoEdicion} setFormI={setFormI} setOpenInvModal={setOpenInvModal} 
+              />
+            )}
+            {vista === 'reparaciones' && <Reparaciones user={user} cargarTodo={cargarTodo} />}
+            {vista === 'bigdata' && <BigDataView bigData={bigData} />}
+            {vista === 'tienda' && <CatalogoTienda productos={productos} user={user} />}
         </Container>
       </Box>
 
-      {/* MODAL USUARIOS */}
-      <Dialog open={openUserModal} onClose={() => setOpenUserModal(false)}>
-        <DialogTitle sx={{bgcolor:'#1e3a8a', color:'white'}}>{modoEdicion ? 'Editar' : 'Nuevo'} Usuario</DialogTitle>
-        <DialogContent sx={{pt:2}}>
-          <TextField fullWidth label="Nombre" margin="dense" value={formU.nombre} onChange={(e)=>setFormU({...formU, nombre:e.target.value})} />
-          <TextField fullWidth label="Email" margin="dense" value={formU.email} onChange={(e)=>setFormU({...formU, email:e.target.value})} />
-          <TextField fullWidth label="Password" type="password" margin="dense" value={formU.password} onChange={(e)=>setFormU({...formU, password:e.target.value})} />
-          <TextField fullWidth label="Rol" margin="dense" value={formU.rol} onChange={(e)=>setFormU({...formU, rol:e.target.value})} />
+      {/* --- MODALES --- */}
+      <Dialog open={openUserModal} onClose={() => setOpenUserModal(false)} PaperProps={{ sx: { borderRadius: '6px' } }}>
+        <Box sx={styles.cardHeader('#26c6da', '#00acc1', 'rgba(0, 172, 193, 0.4)')}>
+          <Typography variant="h6">{modoEdicion ? 'Editar' : 'Nuevo'} Usuario</Typography>
+        </Box>
+        <DialogContent sx={{ pt: 4 }}>
+          <TextField fullWidth label="Nombre" variant="standard" margin="dense" value={formU.nombre} onChange={(e)=>setFormU({...formU, nombre:e.target.value})} />
+          <TextField fullWidth label="Email" variant="standard" margin="dense" value={formU.email} onChange={(e)=>setFormU({...formU, email:e.target.value})} />
+          <TextField fullWidth label="Password" variant="standard" type="password" margin="dense" value={formU.password} onChange={(e)=>setFormU({...formU, password:e.target.value})} />
+          <TextField fullWidth label="Rol" variant="standard" margin="dense" value={formU.rol} onChange={(e)=>setFormU({...formU, rol:e.target.value})} />
         </DialogContent>
-        <DialogActions><Button onClick={()=>setOpenUserModal(false)}>Cancelar</Button><Button variant="contained" onClick={guardarUsuario}>Guardar</Button></DialogActions>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={()=>setOpenUserModal(false)} sx={{ color: '#999' }}>Cancelar</Button>
+          <Button variant="contained" sx={{ bgcolor: '#00acc1' }} onClick={guardarUsuario}>Guardar</Button>
+        </DialogActions>
       </Dialog>
 
-      {/* MODAL INVENTARIO */}
-      <Dialog open={openInvModal} onClose={() => setOpenInvModal(false)}>
-        <DialogTitle sx={{bgcolor:'#1e3a8a', color:'white'}}>{modoEdicion ? 'Editar' : 'Nuevo'} Equipo</DialogTitle>
-        <DialogContent sx={{pt:2}}>
-          <TextField fullWidth label="Marca" margin="dense" value={formI.marca} onChange={(e)=>setFormI({...formI, marca:e.target.value})} />
-          <TextField fullWidth label="Modelo" margin="dense" value={formI.modelo} onChange={(e)=>setFormI({...formI, modelo:e.target.value})} />
-          <TextField fullWidth label="IMEI" margin="dense" value={formI.imei} onChange={(e)=>setFormI({...formI, imei:e.target.value})} />
-          <Box sx={{display:'flex', gap:2}}>
-            <TextField fullWidth label="Stock" type="number" margin="dense" value={formI.stock} onChange={(e)=>setFormI({...formI, stock:e.target.value})} />
-            <TextField fullWidth label="Precio" type="number" margin="dense" value={formI.precio} onChange={(e)=>setFormI({...formI, precio:e.target.value})} />
-          </Box>
+      <Dialog open={openInvModal} onClose={() => setOpenInvModal(false)} PaperProps={{ sx: { borderRadius: '6px' } }}>
+        <Box sx={styles.cardHeader('#66bb6a', '#43a047', 'rgba(76, 175, 80, 0.4)')}>
+          <Typography variant="h6">{modoEdicion ? 'Editar' : 'Nuevo'} Equipo</Typography>
+        </Box>
+        <DialogContent sx={{ pt: 4 }}>
+          <TextField fullWidth label="Marca" variant="standard" margin="dense" value={formI.marca} onChange={(e)=>setFormI({...formI, marca: e.target.value})} />
+          <TextField fullWidth label="Modelo" variant="standard" margin="dense" value={formI.modelo} onChange={(e)=>setFormI({...formI, modelo: e.target.value})} />
+          <TextField fullWidth label="IMEI" variant="standard" margin="dense" value={formI.imei} onChange={(e)=>setFormI({...formI, imei: e.target.value})} />
+          <Grid container spacing={2}>
+            <Grid item xs={6}><TextField fullWidth label="Stock" type="number" variant="standard" margin="dense" value={formI.stock} onChange={(e)=>setFormI({...formI, stock: e.target.value})} /></Grid>
+            <Grid item xs={6}><TextField fullWidth label="Precio" type="number" variant="standard" margin="dense" value={formI.precio} onChange={(e)=>setFormI({...formI, precio: e.target.value})} /></Grid>
+          </Grid>
         </DialogContent>
-        <DialogActions><Button onClick={()=>setOpenInvModal(false)}>Cancelar</Button><Button variant="contained" onClick={guardarInventario}>Guardar</Button></DialogActions>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={()=>setOpenInvModal(false)} sx={{ color: '#999' }}>Cancelar</Button>
+          <Button variant="contained" sx={{ bgcolor: '#43a047' }} onClick={guardarInventario}>Guardar</Button>
+        </DialogActions>
       </Dialog>
     </Box>
+
+
+
+
   );
 }
+
+
+
 
 export default App;

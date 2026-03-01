@@ -1,94 +1,98 @@
-import React, { useState, useEffect } from 'react';
-import { Box, TextField, Grid, Card, CardContent, Typography, Chip, InputAdornment } from '@mui/material';
-import { Search as SearchIcon, SentimentDissatisfied, InfoOutlined } from '@mui/icons-material';
-import axios from 'axios';
+import React from 'react';
+import { 
+  Box, Grid, Paper, Typography, Button, Chip, Divider 
+} from '@mui/material';
+import { 
+  ShoppingCart as CartIcon, 
+  CheckCircle as InStockIcon, 
+  ErrorOutline as NoStockIcon,
+  PhoneAndroid as PhoneIcon 
+} from '@mui/icons-material';
 
-const CatalogoTienda = ({ productos, user }) => { // <--- Recibe el usuario actual
-    const [busqueda, setBusqueda] = useState('');
-    const [filtrados, setFiltrados] = useState(productos);
+const styles = {
+  // Efecto de elevación para la imagen del producto
+  productHeader: (color1, color2) => ({
+    background: `linear-gradient(60deg, ${color1}, ${color2})`,
+    boxShadow: '0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px rgba(0,0,0,.4)',
+    borderRadius: '6px',
+    padding: '30px',
+    marginTop: '-40px',
+    color: 'white',
+    textAlign: 'center',
+    position: 'relative'
+  }),
+  card: {
+    mt: 6, 
+    mb: 2, 
+    p: 2, 
+    borderRadius: '6px', 
+    overflow: 'visible', 
+    position: 'relative',
+    transition: '0.3s',
+    '&:hover': {
+      transform: 'translateY(-10px)',
+      boxShadow: '0 12px 20px -10px rgba(0,0,0,0.28), 0 4px 20px 0px rgba(0,0,0,0.12)'
+    }
+  }
+};
 
-    useEffect(() => {
-        const results = productos.filter(p =>
-            p.marca.toLowerCase().includes(busqueda.toLowerCase()) ||
-            p.modelo.toLowerCase().includes(busqueda.toLowerCase())
-        );
-        setFiltrados(results);
+const CatalogoTienda = ({ productos }) => {
+  return (
+    <Box sx={{ flexGrow: 1, p: 2 }}>
+      <Grid container spacing={5}>
+        {productos.map((p) => (
+          <Grid item xs={12} sm={6} md={4} key={p.id}>
+            <Paper elevation={0} sx={styles.card}>
+              {/* Cabecera de la Tarjeta (Imagen o Icono) */}
+              <Box sx={styles.productHeader('#ec407a', '#d81b60')}>
+                <PhoneIcon sx={{ fontSize: 60 }} />
+              </Box>
 
-        // --- LÓGICA DE BIG DATA (Solo para Taller) ---
-        // Si el usuario es ADMIN, NO registramos la búsqueda fallida
-        if (user?.rol === 'taller' && busqueda.length > 3 && results.length === 0) {
-            const registrarFallo = async () => {
-                try {
-                    await axios.post('http://localhost:9000/analitica/registrar-busqueda', { 
-                        termino: busqueda 
-                    });
-                } catch (err) { console.error("Error al registrar demanda"); }
-            };
-            
-            const timer = setTimeout(registrarFallo, 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [busqueda, productos, user]);
-
-    return (
-        <Box>
-            <TextField
-                fullWidth
-                placeholder="Busca marca o modelo de equipo..."
-                variant="outlined"
-                sx={{ mb: 4, bgcolor: 'white', borderRadius: 2 }}
-                onChange={(e) => setBusqueda(e.target.value)}
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <SearchIcon color="primary" />
-                        </InputAdornment>
-                    ),
-                }}
-            />
-
-            {filtrados.length > 0 ? (
-                <Grid container spacing={3}>
-                    {filtrados.map((p) => (
-                        <Grid item xs={12} sm={6} md={4} key={p.id}>
-                            <Card sx={{ borderRadius: 3, boxShadow: 3, borderTop: '4px solid #1a237e' }}>
-                                <CardContent>
-                                    <Typography variant="h6" fontWeight="bold">{p.marca}</Typography>
-                                    <Typography color="textSecondary">{p.modelo}</Typography>
-                                    <Box mt={2} display="flex" justifyContent="space-between" alignItems="center">
-                                        <Chip 
-                                            label={p.stock > 0 ? `Stock: ${p.stock}` : "Agotado"} 
-                                            color={p.stock > 0 ? "success" : "error"} 
-                                        />
-                                        <Typography variant="h6" color="primary">${p.precio}</Typography>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-            ) : (
-                <Box textAlign="center" mt={5} p={4} sx={{ bgcolor: '#fff', borderRadius: 4 }}>
-                    <SentimentDissatisfied sx={{ fontSize: 60, color: '#ccc', mb: 2 }} />
-                    <Typography variant="h6" color="textSecondary">
-                        No se encontraron resultados para "{busqueda}"
-                    </Typography>
-                    
-                    {/* MENSAJE CONDICIONAL: Solo el taller ve el aviso de "avisaremos al admin" */}
-                    {user?.rol === 'taller' ? (
-                        <Typography variant="body2" color="primary" sx={{ mt: 1 }}>
-                            Hemos registrado esta falta de stock para reponer lo antes posible.
-                        </Typography>
-                    ) : (
-                        <Typography variant="body2" color="secondary" sx={{ mt: 1, fontWeight: 'bold' }}>
-                            <InfoOutlined fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                            Modo Administrador: Esta búsqueda no genera reportes de demanda.
-                        </Typography>
-                    )}
+              {/* Contenido del Producto */}
+              <Box sx={{ p: 2, textAlign: 'center' }}>
+                <Typography variant="caption" color="textSecondary" sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
+                  {p.marca}
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 300, mt: 1, mb: 1, color: '#3c4858' }}>
+                  {p.modelo}
+                </Typography>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                  <Chip 
+                    label={p.stock > 0 ? `${p.stock} Disponibles` : 'Agotado'} 
+                    size="small" 
+                    icon={p.stock > 0 ? <InStockIcon /> : <NoStockIcon />}
+                    color={p.stock > 0 ? "success" : "error"}
+                    variant="outlined"
+                  />
                 </Box>
-            )}
-        </Box>
-    );
+
+                <Divider sx={{ mb: 2 }} />
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h4" sx={{ color: '#4caf50', fontWeight: 300 }}>
+                    ${p.precio}
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    size="small"
+                    startIcon={<CartIcon />}
+                    sx={{ 
+                      bgcolor: '#e91e63', 
+                      borderRadius: '30px',
+                      '&:hover': { bgcolor: '#ad1457' }
+                    }}
+                  >
+                    Ver
+                  </Button>
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
 };
 
 export default CatalogoTienda;
