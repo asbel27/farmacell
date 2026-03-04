@@ -1,25 +1,20 @@
 const { Pool } = require('pg');
 
-// Forzamos a que use la variable de Render si existe
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  console.error("❌ ERROR: No se encontró la variable DATABASE_URL en Render.");
-}
-
 const pool = new Pool({
-  connectionString: connectionString,
-  // En Render (siempre que haya connectionString), el SSL es OBLIGATORIO
-  ssl: connectionString ? { rejectUnauthorized: false } : false
+    user: 'postgres',
+    host: 'localhost',
+    database: 'farmacell_db',
+    password: 'farmacell', // <--- LA CLAVE QUE PUSISTE AL INSTALAR
+    port: 5432,
 });
 
-pool.on('connect', () => {
-  console.log('✅ Conexión exitosa a la base de datos de Render');
-});
-
-pool.on('error', (err) => {
-  // Aquí es donde salía tu error antes
-  console.error('❌ ERROR DE CONEXIÓN CRÍTICO:', err.message);
+// Prueba de conexión inmediata
+pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+        console.error('❌ ERROR DE CONEXIÓN: Revisa si la clave "farmacell" es correcta.');
+    } else {
+        console.log('✅ CONEXIÓN EXITOSA: Base de Datos Farmacell vinculada.');
+    }
 });
 
 module.exports = pool;

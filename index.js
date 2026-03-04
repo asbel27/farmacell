@@ -1,26 +1,38 @@
 const express = require('express');
 const cors = require('cors');
-const pool = require('./db'); // Importamos la conexión que haremos abajo
 const app = express();
 
+// --- MIDDLEWARES ---
 app.use(cors());
 app.use(express.json());
 
-// Health Check para Render
-app.get('/status', (req, res) => res.send('Servidor Farmacell Operativo ✅'));
+// --- IMPORTACIÓN DE RUTAS MODULARES ---
+const usuariosRoutes = require('./routes/usuarios');
+const inventarioRoutes = require('./routes/inventario');
+const analiticaRoutes = require('./routes/analitica');
 
-// --- TUS RUTAS (Ejemplo) ---
-app.get('/inventario', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM inventario');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// ... donde están tus otros require
+const reparacionesRoutes = require('./routes/reparaciones');
+
+// ... debajo de app.use('/inventario'...)
+app.use('/reparaciones', reparacionesRoutes);
+
+// --- CONFIGURACIÓN DE RUTAS ---
+// Nota: 'usuariosRoutes' maneja tanto /auth como /usuarios
+app.use('/auth', usuariosRoutes);      
+app.use('/usuarios', usuariosRoutes);  
+app.use('/inventario', inventarioRoutes);
+app.use('/analitica', analiticaRoutes); // <--- Esta es la que activa el Big Data y Resumen
+
+// --- RUTA DE SALUD DEL SERVIDOR ---
+app.get('/', (req, res) => {
+    res.send("Servidor Farmacell Operativo ✅");
 });
 
-// CONFIGURACIÓN DE PUERTO PARA RENDER
-const PORT = process.env.PORT || 9000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor corriendo en puerto ${PORT}`);
+// --- LANZAMIENTO ---
+const PORT = 9000;
+app.listen(PORT, () => {
+    console.log(`==========================================`);
+    console.log(`🚀 FARMACELL SERVER RUNNING ON PORT ${PORT}`);
+    console.log(`==========================================`);
 });

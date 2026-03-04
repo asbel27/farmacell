@@ -10,7 +10,7 @@ import {
 import { 
   People as PeopleIcon, Inventory as InventoryIcon, Logout as LogoutIcon, 
   Notifications as NotificationsIcon, Assessment as AssessmentIcon, Search as SearchIcon,
-  Build as BuildIcon, ErrorOutline as ErrorIcon
+  Build as BuildIcon, CheckCircle as CheckIcon, ErrorOutline as ErrorIcon
 } from '@mui/icons-material';
 
 // --- COMPONENTES ---
@@ -19,10 +19,6 @@ import InventarioReal from './components/InventarioReal';
 import CatalogoTienda from './components/CatalogoTienda';
 import BigDataView from './components/BigData';
 import Reparaciones from './components/Reparaciones';
-
-// --- CONFIGURACIÓN DE API PARA RENDER ---
-// Si despliegas en Render, React usará la URL de la variable de entorno.
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:9000';
 
 const drawerWidth = 260;
 
@@ -97,10 +93,10 @@ function App() {
     if (!user) return;
     try {
       const [resInv, resU, resValor, resAlertas] = await Promise.all([
-        axios.get(`${API_URL}/inventario`),
-        axios.get(`${API_URL}/usuarios`),
-        axios.get(`${API_URL}/inventario/valor-total`),
-        axios.get(`${API_URL}/inventario/alertas/todas`)
+        axios.get('http://localhost:9000/inventario'),
+        axios.get('http://localhost:9000/usuarios'),
+        axios.get('http://localhost:9000/inventario/valor-total'),
+        axios.get('http://localhost:9000/inventario/alertas/todas')
       ]);
       
       setProductos(resInv.data);
@@ -109,7 +105,7 @@ function App() {
       setAlertas(resAlertas.data);
 
       if (user.rol === 'admin') {
-        const resBD = await axios.get(`${API_URL}/analitica/dashboard`);
+        const resBD = await axios.get('http://localhost:9000/analitica/dashboard');
         setBigData(resBD.data.compras_sugeridas || []);
       }
     } catch (err) { console.error("Error en sincronización:", err); }
@@ -129,41 +125,43 @@ function App() {
 
   const manejarLogin = async () => {
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, loginForm);
+      const res = await axios.post('http://localhost:9000/auth/login', loginForm);
       if (res.data.autenticado) setUser(res.data.usuario);
     } catch { setError("Acceso Denegado, Credenciales incorrectas!"); }
   };
 
   const guardarUsuario = async () => {
     try {
-      const url = `${API_URL}/usuarios`;
+      const url = 'http://localhost:9000/usuarios';
       if (modoEdicion) await axios.put(`${url}/${formU.id}`, formU);
       else await axios.post(url, formU);
-      Swal.fire({ icon: 'success', title: 'Éxito', timer: 1000, showConfirmButton: false });
+      Swal.fire({ icon: 'success', title: 'Operación Exitosa', timer: 1000, showConfirmButton: false });
       setOpenUserModal(false); cargarTodo();
     } catch { Swal.fire({ icon: 'error', title: 'Error' }); }
   };
 
   const guardarInventario = async () => {
     try {
-      const url = `${API_URL}/inventario`;
+      const url = 'http://localhost:9000/inventario';
       if (modoEdicion) await axios.put(`${url}/${formI.id}`, formI);
       else await axios.post(url, formI);
-      Swal.fire({ icon: 'success', title: 'Actualizado', timer: 1000, showConfirmButton: false });
+      Swal.fire({ icon: 'success', title: 'Inventario Actualizado', timer: 1000, showConfirmButton: false });
       setOpenInvModal(false); cargarTodo();
     } catch { Swal.fire({ icon: 'error', title: 'Error' }); }
   };
 
   if (loading) return (
     <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#1f1f1f' }}>
-      <Typography variant="h2" sx={{ color: '#4caf50', fontWeight: 900, animation: 'pulse 2s infinite' }}>FARMACELL</Typography>
+      <Typography variant="h2" sx={{ color: '#4caf50', fontWeight: 900, letterSpacing: '-2px', animation: 'pulse 2s infinite' }}>
+        FARMACELL
+      </Typography>
     </Box>
   );
 
   if (!user) return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#eee' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#eee', p: 3 }}>
       <Container maxWidth="xs">
-        <Paper elevation={10} sx={{ p: 0, borderRadius: '6px' }}>
+        <Paper elevation={10} sx={{ p: 0, borderRadius: '6px', overflow: 'visible' }}>
           <Box sx={styles.cardHeader('#66bb6a', '#43a047', 'rgba(76, 175, 80, 0.4)')}>
              <Typography variant="h5" align="center" fontWeight="bold">LOGIN</Typography>
           </Box>
@@ -171,7 +169,9 @@ function App() {
             <TextField fullWidth label="Email" variant="standard" margin="normal" onChange={(e)=>setLoginForm({...loginForm, email:e.target.value})} />
             <TextField fullWidth label="Password" variant="standard" type="password" margin="normal" onChange={(e)=>setLoginForm({...loginForm, password:e.target.value})} />
             {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-            <Button fullWidth variant="contained" sx={{ mt: 4, bgcolor: '#4caf50' }} onClick={manejarLogin}>ENTRAR</Button>
+            <Button fullWidth variant="contained" sx={{ mt: 4, py: 1.5, bgcolor: '#4caf50', '&:hover': {bgcolor: '#388e3c'} }} onClick={manejarLogin}>
+              ENTRAR
+            </Button>
           </Box>
         </Paper>
       </Container>
@@ -182,22 +182,40 @@ function App() {
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       
+      {/* SIDEBAR DINÁMICO */}
       <Drawer variant="permanent" sx={styles.sidebar}>
         <Box sx={{ p: 3, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.8)' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>FARMACELL {user.rol.toUpperCase()}</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
+            FARMACELL {user.rol === 'admin' ? 'PRO' : 'TALLER'}
+          </Typography>
         </Box>
         <Divider sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
         <Box sx={{ bgcolor: 'rgba(0,0,0,0.8)', height: '100%' }}>
           <List sx={{ px: 2 }}>
             {user.rol === 'admin' && (
               <>
-                <ListItemButton onClick={() => setVista('usuarios')} selected={vista === 'usuarios'} sx={menuItemStyle('#00acc1')}><ListItemIcon><PeopleIcon sx={{color:'white'}}/></ListItemIcon><ListItemText primary="Personal"/></ListItemButton>
-                <ListItemButton onClick={() => setVista('inventario')} selected={vista === 'inventario'} sx={menuItemStyle('#4caf50')}><ListItemIcon><InventoryIcon sx={{color:'white'}}/></ListItemIcon><ListItemText primary="Inventario"/></ListItemButton>
-                <ListItemButton onClick={() => setVista('bigdata')} selected={vista === 'bigdata'} sx={menuItemStyle('#f44336')}><ListItemIcon><AssessmentIcon sx={{color:'white'}}/></ListItemIcon><ListItemText primary="Demanda"/></ListItemButton>
+                <ListItemButton onClick={() => setVista('usuarios')} selected={vista === 'usuarios'} sx={menuItemStyle('#00acc1')}>
+                  <ListItemIcon><PeopleIcon sx={{color:'white'}}/></ListItemIcon>
+                  <ListItemText primary="Personal"/>
+                </ListItemButton>
+                <ListItemButton onClick={() => setVista('inventario')} selected={vista === 'inventario'} sx={menuItemStyle('#4caf50')}>
+                  <ListItemIcon><InventoryIcon sx={{color:'white'}}/></ListItemIcon>
+                  <ListItemText primary="Inventario"/>
+                </ListItemButton>
+                <ListItemButton onClick={() => setVista('bigdata')} selected={vista === 'bigdata'} sx={menuItemStyle('#f44336')}>
+                  <ListItemIcon><AssessmentIcon sx={{color:'white'}}/></ListItemIcon>
+                  <ListItemText primary="Demanda"/>
+                </ListItemButton>
               </>
             )}
-            <ListItemButton onClick={() => setVista('reparaciones')} selected={vista === 'reparaciones'} sx={menuItemStyle('#ff9800')}><ListItemIcon><BuildIcon sx={{color:'white'}}/></ListItemIcon><ListItemText primary="Mis Reparaciones"/></ListItemButton>
-            <ListItemButton onClick={() => setVista('tienda')} selected={vista === 'tienda'} sx={menuItemStyle('#e91e63')}><ListItemIcon><SearchIcon sx={{color:'white'}}/></ListItemIcon><ListItemText primary="Catálogo"/></ListItemButton>
+            <ListItemButton onClick={() => setVista('reparaciones')} selected={vista === 'reparaciones'} sx={menuItemStyle('#ff9800')}>
+              <ListItemIcon><BuildIcon sx={{color:'white'}}/></ListItemIcon>
+              <ListItemText primary="Mis Reparaciones"/>
+            </ListItemButton>
+            <ListItemButton onClick={() => setVista('tienda')} selected={vista === 'tienda'} sx={menuItemStyle('#e91e63')}>
+              <ListItemIcon><SearchIcon sx={{color:'white'}}/></ListItemIcon>
+              <ListItemText primary="Catálogo"/>
+            </ListItemButton>
           </List>
           <ListItemButton sx={{ mt: 'auto', px: 2 }} onClick={() => setUser(null)}>
             <ListItemIcon sx={{ color: 'white' }}><LogoutIcon /></ListItemIcon>
@@ -209,65 +227,146 @@ function App() {
       <Box component="main" sx={styles.mainPanel}>
         <AppBar position="static" sx={{ bgcolor: 'transparent', boxShadow: 'none', mb: 4 }}>
           <Toolbar>
-            <Typography variant="h5" sx={{ color: '#3c4858', fontWeight: 300, flexGrow: 1 }}>{vista.toUpperCase()}</Typography>
+            <Typography variant="h5" sx={{ color: '#3c4858', fontWeight: 300, flexGrow: 1 }}>
+              {vista.toUpperCase()}
+            </Typography>
             
-            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-              <Badge badgeContent={alertas.length} color="error"><NotificationsIcon /></Badge>
+            {/* CAMPANITA DE NOTIFICACIONES */}
+            <IconButton color="default" onClick={(e) => setAnchorEl(e.currentTarget)}>
+              <Badge badgeContent={alertas.length} color="error">
+                <NotificationsIcon />
+              </Badge>
             </IconButton>
 
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)} PaperProps={{ sx: { mt: '45px', width: '300px' } }}>
-              <Box sx={{ p: 2, bgcolor: '#f5f5f5' }}><Typography variant="subtitle2">Notificaciones ({alertas.length})</Typography></Box>
-              <Divider />
+            {/* MENÚ DE NOTIFICACIONES */}
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+              PaperProps={{
+                sx: {
+                  mt: '45px',
+                  borderRadius: '8px',
+                  width: '300px',
+                  boxShadow: '0 10px 30px -12px rgba(0,0,0,0.42), 0 4px 25px 0px rgba(0,0,0,0.12)'
+                }
+              }}
+            >
+              <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderBottom: '1px solid #ddd' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#333' }}>
+                  Notificaciones ({alertas.length})
+                </Typography>
+              </Box>
               {alertas.length > 0 ? (
-                alertas.map((a, i) => (
-                  <MenuItem key={i} onClick={() => setAnchorEl(null)}>
+                alertas.map((alerta, index) => (
+                  <MenuItem key={index} onClick={() => setAnchorEl(null)} sx={{ py: 1.5, borderBottom: '1px solid #eee' }}>
                     <ListItemIcon><ErrorIcon color="error" fontSize="small" /></ListItemIcon>
-                    <ListItemText primary={a.item || "Stock Bajo"} secondary={a.mensaje} primaryTypographyProps={{ variant: 'body2', fontWeight: 'bold' }} />
+                    <ListItemText 
+                      primary={alerta.item || "Stock Bajo"} 
+                      secondary={alerta.mensaje || "Quedan pocas unidades"} 
+                      primaryTypographyProps={{ variant: 'body2', fontWeight: 'bold' }}
+                      secondaryTypographyProps={{ variant: 'caption' }}
+                    />
                   </MenuItem>
                 ))
               ) : (
-                <MenuItem><Typography variant="body2">No hay alertas</Typography></MenuItem>
+                <MenuItem sx={{ py: 3, justifyContent: 'center' }}>
+                  <Typography variant="body2" color="textSecondary">No tienes alertas pendientes</Typography>
+                </MenuItem>
               )}
             </Menu>
 
-            <Avatar sx={{ bgcolor: '#4caf50', ml: 2, mr: 1 }}>{user.nombre[0]}</Avatar>
-            <Typography sx={{ color: '#3c4858', fontWeight: 'bold' }}>{user.nombre}</Typography>
+            <Avatar sx={{ bgcolor: '#4caf50', ml: 2, mr: 1 }}>{user.nombre ? user.nombre[0] : 'U'}</Avatar>
+            <Typography sx={{ color: '#3c4858', mr: 2, fontWeight: 'bold' }}>{user.nombre}</Typography>
           </Toolbar>
         </AppBar>
 
+        {/* WIDGETS DE ADMIN */}
         {user.rol === 'admin' && (vista === 'usuarios' || vista === 'inventario') && (
-          <Grid container spacing={3} sx={{ mb: 6 }}>
+          <Grid container spacing={3} sx={{ mb: 6, mt: 1 }}>
             <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 2, textAlign: 'right' }}>
-                <Box sx={styles.cardHeader('#ffa726', '#fb8c00', 'rgba(255,152,0,0.4)')}><InventoryIcon /></Box>
-                <Typography variant="body2" color="textSecondary">Capital</Typography>
-                <Typography variant="h4">${resumenFinanciero}</Typography>
+              <Paper sx={{ p: 0, borderRadius: '6px', position: 'relative' }}>
+                <Box sx={styles.cardHeader('#ffa726', '#fb8c00', 'rgba(255, 152, 0, 0.4)')}>
+                   <InventoryIcon fontSize="large" />
+                </Box>
+                <Box sx={{ p: 2, textAlign: 'right' }}>
+                  <Typography variant="body2" color="textSecondary">Capital Inventario</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 300 }}>${resumenFinanciero}</Typography>
+                </Box>
+                <Divider />
+                <Box sx={{ p: 1, pl: 2 }}><Typography variant="caption" color="textSecondary">Actualizado ahora</Typography></Box>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 0, borderRadius: '6px' }}>
+                <Box sx={styles.cardHeader('#66bb6a', '#43a047', 'rgba(76, 175, 80, 0.4)')}>
+                   <SearchIcon fontSize="large" />
+                </Box>
+                <Box sx={{ p: 2, textAlign: 'right' }}>
+                  <Typography variant="body2" color="textSecondary">Stock Total</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                    {productos.reduce((acc, p) => acc + (parseInt(p.stock) || 0), 0)}
+                  </Typography>
+                </Box>
+                <Divider />
+                <Box sx={{ p: 1, pl: 2 }}><Typography variant="caption" color="textSecondary">Equipos en tienda</Typography></Box>
               </Paper>
             </Grid>
           </Grid>
         )}
 
-        <Container maxWidth="xl">
-            {vista === 'usuarios' && <GestionUsuarios usuarios={usuarios} cargarTodo={cargarTodo} setModoEdicion={setModoEdicion} setFormU={setFormU} setOpenUserModal={setOpenUserModal} />}
-            {vista === 'inventario' && <InventarioReal productos={productos} cargarTodo={cargarTodo} setModoEdicion={setModoEdicion} setFormI={setFormI} setOpenInvModal={setOpenInvModal} />}
+        <Container maxWidth="xl" sx={{ mt: 2 }}>
+            {vista === 'usuarios' && (
+              <GestionUsuarios 
+                usuarios={usuarios} cargarTodo={cargarTodo} 
+                setModoEdicion={setModoEdicion} setFormU={setFormU} setOpenUserModal={setOpenUserModal} 
+              />
+            )}
+            {vista === 'inventario' && (
+              <InventarioReal 
+                productos={productos} cargarTodo={cargarTodo} 
+                setModoEdicion={setModoEdicion} setFormI={setFormI} setOpenInvModal={setOpenInvModal} 
+              />
+            )}
             {vista === 'reparaciones' && <Reparaciones user={user} cargarTodo={cargarTodo} />}
             {vista === 'bigdata' && <BigDataView bigData={bigData} />}
             {vista === 'tienda' && <CatalogoTienda productos={productos} user={user} />}
         </Container>
       </Box>
 
-      {/* MODALES CORREGIDOS */}
-      <Dialog open={openUserModal} onClose={() => setOpenUserModal(false)}>
-        <DialogTitle>{modoEdicion ? 'Editar' : 'Nuevo'} Usuario</DialogTitle>
-        <DialogContent>
-          <TextField fullWidth label="Nombre" variant="standard" value={formU.nombre} onChange={(e)=>setFormU({...formU, nombre:e.target.value})} />
-          <TextField fullWidth label="Email" variant="standard" value={formU.email} onChange={(e)=>setFormU({...formU, email:e.target.value})} />
-          {!modoEdicion && <TextField fullWidth label="Password" variant="standard" type="password" onChange={(e)=>setFormU({...formU, password:e.target.value})} />}
-          <TextField fullWidth label="Rol" variant="standard" value={formU.rol} onChange={(e)=>setFormU({...formU, rol:e.target.value})} />
+      {/* --- MODALES --- */}
+      <Dialog open={openUserModal} onClose={() => setOpenUserModal(false)} PaperProps={{ sx: { borderRadius: '6px' } }}>
+        <Box sx={styles.cardHeader('#26c6da', '#00acc1', 'rgba(0, 172, 193, 0.4)')}>
+          <Typography variant="h6">{modoEdicion ? 'Editar' : 'Nuevo'} Usuario</Typography>
+        </Box>
+        <DialogContent sx={{ pt: 4 }}>
+          <TextField fullWidth label="Nombre" variant="standard" margin="dense" value={formU.nombre} onChange={(e)=>setFormU({...formU, nombre:e.target.value})} />
+          <TextField fullWidth label="Email" variant="standard" margin="dense" value={formU.email} onChange={(e)=>setFormU({...formU, email:e.target.value})} />
+          <TextField fullWidth label="Password" variant="standard" type="password" margin="dense" value={formU.password} onChange={(e)=>setFormU({...formU, password:e.target.value})} />
+          <TextField fullWidth label="Rol" variant="standard" margin="dense" value={formU.rol} onChange={(e)=>setFormU({...formU, rol:e.target.value})} />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={()=>setOpenUserModal(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={guardarUsuario}>Guardar</Button>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={()=>setOpenUserModal(false)} sx={{ color: '#999' }}>Cancelar</Button>
+          <Button variant="contained" sx={{ bgcolor: '#00acc1' }} onClick={guardarUsuario}>Guardar</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openInvModal} onClose={() => setOpenInvModal(false)} PaperProps={{ sx: { borderRadius: '6px' } }}>
+        <Box sx={styles.cardHeader('#66bb6a', '#43a047', 'rgba(76, 175, 80, 0.4)')}>
+          <Typography variant="h6">{modoEdicion ? 'Editar' : 'Nuevo'} Equipo</Typography>
+        </Box>
+        <DialogContent sx={{ pt: 4 }}>
+          <TextField fullWidth label="Marca" variant="standard" margin="dense" value={formI.marca} onChange={(e)=>setFormI({...formI, marca: e.target.value})} />
+          <TextField fullWidth label="Modelo" variant="standard" margin="dense" value={formI.modelo} onChange={(e)=>setFormI({...formI, modelo: e.target.value})} />
+          <TextField fullWidth label="IMEI" variant="standard" margin="dense" value={formI.imei} onChange={(e)=>setFormI({...formI, imei: e.target.value})} />
+          <Grid container spacing={2}>
+            <Grid item xs={6}><TextField fullWidth label="Stock" type="number" variant="standard" margin="dense" value={formI.stock} onChange={(e)=>setFormI({...formI, stock: e.target.value})} /></Grid>
+            <Grid item xs={6}><TextField fullWidth label="Precio" type="number" variant="standard" margin="dense" value={formI.precio} onChange={(e)=>setFormI({...formI, precio: e.target.value})} /></Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={()=>setOpenInvModal(false)} sx={{ color: '#999' }}>Cancelar</Button>
+          <Button variant="contained" sx={{ bgcolor: '#43a047' }} onClick={guardarInventario}>Guardar</Button>
         </DialogActions>
       </Dialog>
     </Box>
