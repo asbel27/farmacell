@@ -20,6 +20,11 @@ import CatalogoTienda from './components/CatalogoTienda';
 import BigDataView from './components/BigData';
 import Reparaciones from './components/Reparaciones';
 
+// ==========================================================
+// 🚀 CONFIGURACIÓN DE URL DE LA API (RENDER)
+// ==========================================================
+const API_BASE_URL = 'https://farmacell-571s.onrender.com';
+
 const drawerWidth = 260;
 
 const styles = {
@@ -93,10 +98,10 @@ function App() {
     if (!user) return;
     try {
       const [resInv, resU, resValor, resAlertas] = await Promise.all([
-        axios.get('http://localhost:9000/inventario'),
-        axios.get('http://localhost:9000/usuarios'),
-        axios.get('http://localhost:9000/inventario/valor-total'),
-        axios.get('http://localhost:9000/inventario/alertas/todas')
+        axios.get(`${API_BASE_URL}/inventario`),
+        axios.get(`${API_BASE_URL}/usuarios`),
+        axios.get(`${API_BASE_URL}/inventario/valor-total`),
+        axios.get(`${API_BASE_URL}/inventario/alertas/todas`)
       ]);
       
       setProductos(resInv.data);
@@ -105,7 +110,7 @@ function App() {
       setAlertas(resAlertas.data);
 
       if (user.rol === 'admin') {
-        const resBD = await axios.get('http://localhost:9000/analitica/dashboard');
+        const resBD = await axios.get(`${API_BASE_URL}/analitica/dashboard`);
         setBigData(resBD.data.compras_sugeridas || []);
       }
     } catch (err) { console.error("Error en sincronización:", err); }
@@ -125,14 +130,14 @@ function App() {
 
   const manejarLogin = async () => {
     try {
-      const res = await axios.post('http://localhost:9000/auth/login', loginForm);
+      const res = await axios.post(`${API_BASE_URL}/auth/login`, loginForm);
       if (res.data.autenticado) setUser(res.data.usuario);
     } catch { setError("Acceso Denegado, Credenciales incorrectas!"); }
   };
 
   const guardarUsuario = async () => {
     try {
-      const url = 'http://localhost:9000/usuarios';
+      const url = `${API_BASE_URL}/usuarios`;
       if (modoEdicion) await axios.put(`${url}/${formU.id}`, formU);
       else await axios.post(url, formU);
       Swal.fire({ icon: 'success', title: 'Operación Exitosa', timer: 1000, showConfirmButton: false });
@@ -142,7 +147,7 @@ function App() {
 
   const guardarInventario = async () => {
     try {
-      const url = 'http://localhost:9000/inventario';
+      const url = `${API_BASE_URL}/inventario`;
       if (modoEdicion) await axios.put(`${url}/${formI.id}`, formI);
       else await axios.post(url, formI);
       Swal.fire({ icon: 'success', title: 'Inventario Actualizado', timer: 1000, showConfirmButton: false });
@@ -150,6 +155,7 @@ function App() {
     } catch { Swal.fire({ icon: 'error', title: 'Error' }); }
   };
 
+  // ... (El resto del código de renderizado se mantiene igual)
   if (loading) return (
     <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#1f1f1f' }}>
       <Typography variant="h2" sx={{ color: '#4caf50', fontWeight: 900, letterSpacing: '-2px', animation: 'pulse 2s infinite' }}>
@@ -231,14 +237,12 @@ function App() {
               {vista.toUpperCase()}
             </Typography>
             
-            {/* CAMPANITA DE NOTIFICACIONES */}
             <IconButton color="default" onClick={(e) => setAnchorEl(e.currentTarget)}>
               <Badge badgeContent={alertas.length} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
 
-            {/* MENÚ DE NOTIFICACIONES */}
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
@@ -281,7 +285,6 @@ function App() {
           </Toolbar>
         </AppBar>
 
-        {/* WIDGETS DE ADMIN */}
         {user.rol === 'admin' && (vista === 'usuarios' || vista === 'inventario') && (
           <Grid container spacing={3} sx={{ mb: 6, mt: 1 }}>
             <Grid item xs={12} md={4}>
@@ -328,7 +331,7 @@ function App() {
                 setModoEdicion={setModoEdicion} setFormI={setFormI} setOpenInvModal={setOpenInvModal} 
               />
             )}
-            {vista === 'reparaciones' && <Reparaciones user={user} cargarTodo={cargarTodo} />}
+            {vista === 'reparaciones' && <Reparaciones user={user} cargarTodo={cargarTodo} API_BASE_URL={API_BASE_URL} />}
             {vista === 'bigdata' && <BigDataView bigData={bigData} />}
             {vista === 'tienda' && <CatalogoTienda productos={productos} user={user} />}
         </Container>

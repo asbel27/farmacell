@@ -2,9 +2,12 @@ const express = require('express');
 
 const app = express();
 const cors = require('cors');
+
+// Configuración recomendada
 app.use(cors({
-    origin: 'http://farmacell.alwaysdata.net',
-    credentials: true
+  origin: '*', // Esto permite que Alwaysdata se conecte sin problemas
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 // --- MIDDLEWARES ---
 
