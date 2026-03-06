@@ -1,10 +1,10 @@
 const { Pool } = require('pg');
 
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
+    user: 'farmacell',
+    host: 'postgresql-farmacell.alwaysdata.net',
     database: 'farmacell_db',
-    password: 'farmacell', // <--- LA CLAVE QUE PUSISTE AL INSTALAR
+    password: 'Casita.21!', // <--- LA CLAVE QUE PUSISTE AL INSTALAR
     port: 5432,
 });
 
