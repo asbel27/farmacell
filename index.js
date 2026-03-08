@@ -3,9 +3,8 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 
-// Configuración recomendada
 app.use(cors({
-  origin: '*', // Esto permite que Alwaysdata se conecte sin problemas
+  origin: '*', // Esto permite que tu nuevo dominio de Render lea los datos
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
