@@ -16,8 +16,8 @@ const BigData = () => {
     const fetchStats = async () => {
         try {
             const [resDash, resAlertas] = await Promise.all([
-                axios.get('http://localhost:9000/analitica/dashboard'),
-                axios.get('http://localhost:9000/inventario/alertas/stock-bajo')
+                axios.get('https://farmacell-571s.onrender.com/analitica/dashboard'),
+                axios.get('https://farmacell-571s.onrender.com/inventario/alertas/stock-bajo')
             ]);
 
             setStats({
@@ -46,7 +46,7 @@ const BigData = () => {
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`http://localhost:9000/analitica/demanda/${termino}`);
+                await axios.delete(`https://farmacell-571s.onrender.com/analitica/demanda/${termino}`);
                 Swal.fire('Eliminado', 'Registro de demanda limpiado.', 'success');
                 fetchStats();
             } catch (err) {
@@ -104,6 +104,7 @@ const BigData = () => {
 
                 {/* COLUMNA 2: STOCK CRÍTICO */}
                 <Grid item xs={12} md={5}>
+                
                     <Card elevation={4} sx={{ borderRadius: 4, borderTop: '6px solid #ff9800' }}>
                         <CardContent>
                             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
