@@ -16,8 +16,8 @@ const BigData = () => {
     const fetchStats = async () => {
         try {
             const [resDash, resAlertas] = await Promise.all([
-                axios.get('https://farmacell-571s.onrender.com/analitica/dashboard'),
-                axios.get('https://farmacell-571s.onrender.com/inventario/alertas/stock-bajo')
+                axios.get('http://localhost:9000/analitica/dashboard'),
+                axios.get('http://localhost:9000/inventario/alertas/stock-bajo')
             ]);
 
             setStats({
@@ -46,7 +46,7 @@ const BigData = () => {
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`https://farmacell-571s.onrender.com/analitica/demanda/${termino}`);
+                await axios.delete(`http://localhost:9000/analitica/demanda/${termino}`);
                 Swal.fire('Eliminado', 'Registro de demanda limpiado.', 'success');
                 fetchStats();
             } catch (err) {

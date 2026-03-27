@@ -8,7 +8,7 @@ export const useReparaciones = () => {
     // Función para traer los datos de Postgres
     const listarReparaciones = useCallback(async () => {
         try {
-            const res = await axios.get('https://farmacell-571s.onrender.com/reparaciones');
+            const res = await axios.get('http://localhost:9000/reparaciones');
             // Si los datos vienen dentro de un objeto 'rows', los extraemos
             const datos = Array.isArray(res.data) ? res.data : (res.data.rows || []);
             setReparaciones(datos);
@@ -21,7 +21,7 @@ export const useReparaciones = () => {
     // Función para Guardar
     const crearReparacion = async (datos) => {
         try {
-            await axios.post('https://farmacell-571s.onrender.com/reparaciones', datos);
+            await axios.post('http://localhost:9000/reparaciones', datos);
             await listarReparaciones(); // Recargamos la tabla
             Swal.fire('¡Listo!', 'Orden guardada', 'success');
             return true;
@@ -35,7 +35,7 @@ export const useReparaciones = () => {
     // Función para Actualizar
     const actualizarReparacion = async (id, datos) => {
         try {
-            await axios.put(`https://farmacell-571s.onrender.com/reparaciones/${id}`, datos);
+            await axios.put(`http://localhost:9000/reparaciones/${id}`, datos);
             await listarReparaciones();
             Swal.fire('Actualizado', 'Registro modificado', 'success');
             return true;
@@ -57,7 +57,7 @@ export const useReparaciones = () => {
 
         if (confirm.isConfirmed) {
             try {
-                await axios.delete(`https://farmacell-571s.onrender.com/reparaciones/${id}`);
+                await axios.delete(`http://localhost:9000/reparaciones/${id}`);
                 await listarReparaciones();
                 Swal.fire('Borrado', 'La orden fue eliminada', 'success');
                 return true;

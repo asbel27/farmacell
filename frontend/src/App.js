@@ -21,9 +21,9 @@ import BigDataView from './components/BigData';
 import Reparaciones from './components/Reparaciones';
 
 // ==========================================================
-// 🚀 CONFIGURACIÓN DE URL DE LA API (RENDER)
+// 🚀 CONFIGURACIÓN DE URL DE LA API (LOCAL)
 // ==========================================================
-const API_BASE_URL = 'https://farmacell-571s.onrender.com';
+const API_BASE_URL = 'http://localhost:9000';
 
 const drawerWidth = 260;
 
